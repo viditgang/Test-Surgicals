@@ -1,0 +1,6 @@
+{
+  "name": "Divine Surgicals ERP",
+  "description": "Premium modern ERP for Divine Surgicals in Silchar, Assam, featuring real-time Excel/Google Sheets two-way sync, inventory logs, supplier relations, invoicing, accounts, and an integrated Gemini AI Assistant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
