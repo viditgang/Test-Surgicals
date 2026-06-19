@@ -1,6 +1,5 @@
 import React from "react";
 import { ERPData, User, SyncStatus, Product, Supplier, Customer, PurchaseOrder, SalesInvoice, FinancialRecord, InventoryLog, SupplierLedgerEntry, InventoryActionType, POItem, InvoiceItem } from "./types";
-import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import DashboardView from "./components/DashboardView";
 import InventoryView from "./components/InventoryView";
@@ -14,7 +13,7 @@ import AIAssistantView from "./components/AIAssistantView";
 import SettingsView from "./components/SettingsView";
 import EmployeesView from "./components/EmployeesView";
 import LoginView from "./components/LoginView";
-import { Lock, ShieldAlert } from "lucide-react";
+import { Lock, ShieldAlert, Menu } from "lucide-react";
 
 export default function App() {
   const [currentUser, setCurrentUser] = React.useState<User | null>(null);
@@ -1137,17 +1136,20 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#F8FBFF] flex flex-col font-sans">
       
-      {/* Universal branding and header controls */}
-      <Header 
-        currentUser={currentUser}
-        setCurrentUser={setCurrentUser}
-        syncStatus={erpData.syncStatus}
-        triggerSync={handleTriggerSync}
-        isSyncing={isSyncing}
-        users={erpData.users}
-        onLogout={handleLogout}
-        onToggleMobileMenu={() => setIsMobileMenuOpen(true)}
-      />
+      {/* Minimalistic Mobile Top Bar (Hidden on desktops) */}
+      <div className="md:hidden bg-white border-b border-slate-150 p-3 flex items-center justify-between shadow-xs">
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-1.5 hover:bg-slate-50 border border-slate-200 active:bg-slate-100 text-slate-600 rounded-xl transition cursor-pointer"
+            title="Open navigation pane"
+          >
+            <Menu size={18} />
+          </button>
+          <span className="font-extrabold text-xs text-[#0F4C81]">{erpData.appName || "Divine Surgicals"}</span>
+        </div>
+        <span className="text-[10px] bg-blue-50 text-[#0F4C81] px-2 py-0.5 rounded font-mono font-bold uppercase">Active Hub</span>
+      </div>
 
       <div className="flex-1 flex flex-col md:flex-row relative">
         
@@ -1161,6 +1163,11 @@ export default function App() {
           onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
           appLogo={erpData.appLogo}
           appName={erpData.appName}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          syncStatus={erpData.syncStatus}
+          triggerSync={handleTriggerSync}
+          isSyncing={isSyncing}
         />
 
         {/* Content canvas container */}

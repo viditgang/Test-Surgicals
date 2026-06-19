@@ -90,14 +90,14 @@ export default function LoginView({ onLoginSuccess, appLogo, appName }: LoginVie
   };
 
   // Simulated account auth for easy, seamless sandbox execution
-  const handleSimulatedSignIn = async (email: string) => {
+  const handleSimulatedSignIn = async (email: string, pin: string) => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch("/api/auth/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, pin })
       });
 
       if (!res.ok) {
@@ -258,7 +258,8 @@ export default function LoginView({ onLoginSuccess, appLogo, appName }: LoginVie
             <form onSubmit={(e) => {
               e.preventDefault();
               const emailVal = (e.currentTarget.elements.namedItem("email") as HTMLInputElement).value;
-              handleSimulatedSignIn(emailVal);
+              const pinVal = (e.currentTarget.elements.namedItem("pin") as HTMLInputElement).value;
+              handleSimulatedSignIn(emailVal, pinVal);
             }} className="p-5 space-y-4 font-sans">
               
               <div className="space-y-1">
@@ -272,14 +273,36 @@ export default function LoginView({ onLoginSuccess, appLogo, appName }: LoginVie
                 />
               </div>
 
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Security Access PIN</label>
+                <input
+                  type="password"
+                  name="pin"
+                  placeholder="4-digit PIN passcode"
+                  maxLength={4}
+                  pattern="\d{4}"
+                  style={{ letterSpacing: '0.25em' }}
+                  className="w-full border border-slate-200 rounded-xl p-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#0F4C81] focus:border-transparent font-mono text-center"
+                  required
+                />
+                <p className="text-[9px] text-slate-400 mt-0.5">Please check your registered 4-digit PIN configured in Employee list.</p>
+              </div>
+
               {error && (
                 <div className="p-3 bg-rose-50 border border-rose-150 rounded-xl text-[10px] text-rose-700 font-semibold leading-normal">
                   ⚠️ {error}
                 </div>
               )}
 
-              <div className="bg-slate-50 p-3 rounded-xl text-[9.5px] text-slate-500 leading-normal border border-slate-150">
-                ⭐ <strong>Access Controls:</strong> Enter <code>gangvidit@gmail.com</code> (Principal Owner) or any custom staff email registered in the personnel roster.
+              <div className="bg-slate-50 p-3 rounded-xl text-[9.5px] text-slate-500 leading-normal border border-slate-150 space-y-1">
+                <div className="font-bold text-slate-600">⭐ Registered Personnel Pin Check:</div>
+                <ul className="list-disc pl-3 text-[9px] space-y-0.5">
+                  <li><strong>Vidit Gang</strong>: <code>gangvidit@gmail.com</code> (PIN: <code>2606</code>)</li>
+                  <li><strong>Debasish Chakraborty</strong>: <code>owner@divinesurgicals.com</code> (PIN: <code>1111</code>)</li>
+                  <li><strong>Amit Roy</strong>: <code>amit.manager@divinesurgicals.com</code> (PIN: <code>2222</code>)</li>
+                  <li><strong>Sanjay Dutta</strong>: <code>sanjay.accounts@divinesurgicals.com</code> (PIN: <code>3333</code>)</li>
+                  <li><strong>Joydeep Sen</strong>: <code>joydeep.sales@divinesurgicals.com</code> (PIN: <code>4444</code>)</li>
+                </ul>
               </div>
 
               <div className="flex justify-end gap-2 pt-2 text-xs font-bold">
@@ -295,7 +318,7 @@ export default function LoginView({ onLoginSuccess, appLogo, appName }: LoginVie
                   disabled={loading}
                   className="px-5 py-2 bg-[#0F4C81] text-white hover:bg-opacity-95 rounded-xl shadow-xs cursor-pointer"
                 >
-                  {loading ? "Authenticating..." : "Next"}
+                  {loading ? "Authenticating..." : "Sign In"}
                 </button>
               </div>
 

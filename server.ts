@@ -547,10 +547,10 @@ const generateDefaultData = (): ERPData => {
     activityLogs,
     syncStatus,
     users: [
-      { id: "user-owner", name: "Debasish Chakraborty", username: "debasish", role: "Owner" as UserRole, email: "owner@divinesurgicals.com" },
-      { id: "user-manager", name: "Amit Roy", username: "amit", role: "Manager" as UserRole, email: "amit.manager@divinesurgicals.com" },
-      { id: "user-accountant", name: "Sanjay Dutta", username: "sanjay", role: "Accountant" as UserRole, email: "sanjay.accounts@divinesurgicals.com" },
-      { id: "user-sales", name: "Joydeep Sen", username: "joydeep", role: "Sales Executive" as UserRole, email: "joydeep.sales@divinesurgicals.com" }
+      { id: "user-owner", name: "Debasish Chakraborty", username: "debasish", role: "Owner" as UserRole, email: "owner@divinesurgicals.com", pin: "1111" },
+      { id: "user-manager", name: "Amit Roy", username: "amit", role: "Manager" as UserRole, email: "amit.manager@divinesurgicals.com", pin: "2222" },
+      { id: "user-accountant", name: "Sanjay Dutta", username: "sanjay", role: "Accountant" as UserRole, email: "sanjay.accounts@divinesurgicals.com", pin: "3333" },
+      { id: "user-sales", name: "Joydeep Sen", username: "joydeep", role: "Sales Executive" as UserRole, email: "joydeep.sales@divinesurgicals.com", pin: "4444" }
     ],
     rolePermissions: {
       "Owner": ["dashboard", "inventory", "purchases", "sales", "suppliers", "customers", "finance", "reports", "employees", "ai-assistant", "settings"],
@@ -570,13 +570,31 @@ const loadERPData = (): ERPData => {
       
       let updated = false;
       if (!parsed.users || !Array.isArray(parsed.users)) {
-        parsed.users = [
-          { id: "user-owner", name: "Debasish Chakraborty", username: "debasish", role: "Owner", email: "owner@divinesurgicals.com" },
-          { id: "user-manager", name: "Amit Roy", username: "amit", role: "Manager", email: "amit.manager@divinesurgicals.com" },
-          { id: "user-accountant", name: "Sanjay Dutta", username: "sanjay", role: "Accountant", email: "sanjay.accounts@divinesurgicals.com" },
-          { id: "user-sales", name: "Joydeep Sen", username: "joydeep", role: "Sales Executive", email: "joydeep.sales@divinesurgicals.com" }
+         parsed.users = [
+          { id: "user-owner", name: "Debasish Chakraborty", username: "debasish", role: "Owner", email: "owner@divinesurgicals.com", pin: "1111" },
+          { id: "user-manager", name: "Amit Roy", username: "amit", role: "Manager", email: "amit.manager@divinesurgicals.com", pin: "2222" },
+          { id: "user-accountant", name: "Sanjay Dutta", username: "sanjay", role: "Accountant", email: "sanjay.accounts@divinesurgicals.com", pin: "3333" },
+          { id: "user-sales", name: "Joydeep Sen", username: "joydeep", role: "Sales Executive", email: "joydeep.sales@divinesurgicals.com", pin: "4444" }
         ];
         updated = true;
+      } else {
+        // Ensure every user has a PIN
+        parsed.users.forEach(u => {
+          if (u.email.toLowerCase() === "gangvidit@gmail.com" || u.id === "user-owner" || u.role === "Owner") {
+            u.pin = "2606";
+            if (u.email.toLowerCase() !== "gangvidit@gmail.com") {
+              u.email = "gangvidit@gmail.com";
+              u.name = "Vidit Gang (Owner)";
+            }
+            updated = true;
+          } else if (!u.pin) {
+            if (u.id === "user-manager") u.pin = "2222";
+            else if (u.id === "user-accountant") u.pin = "3333";
+            else if (u.id === "user-sales") u.pin = "4444";
+            else u.pin = Math.floor(1000 + Math.random() * 9000).toString(); // random PIN
+            updated = true;
+          }
+        });
       }
       if (!parsed.rolePermissions) {
         parsed.rolePermissions = {
@@ -787,38 +805,53 @@ app.get(["/auth/callback", "/auth/callback/"], async (req, res) => {
 });
 
 // API: Simulate Google Authentication (For reviewing/testing when keys are missing)
-// API: Simulate Google Authentication (For reviewing/testing when keys are missing)
 app.post("/api/auth/simulate", (req, res) => {
-  const { email } = req.body as { email: string };
+  const { email, pin } = req.body as { email: string; pin: string };
   if (!email) {
     return res.status(400).json({ error: "Please enter your Google account email." });
+  }
+  if (!pin) {
+    return res.status(400).json({ error: "Please enter your 4-digit Security Passcode (PIN)." });
   }
 
   const data = loadERPData();
   let matchedUser = data.users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
   
-  if (!matchedUser && email.trim().toLowerCase() === "gangvidit@gmail.com") {
-    // Auto-map Owner to Vidit Gang
-    const owner = data.users.find(u => u.role === "Owner");
-    if (owner) {
-      owner.email = "gangvidit@gmail.com";
-      owner.name = "Vidit Gang (Owner)";
-      matchedUser = owner;
+  if (email.trim().toLowerCase() === "gangvidit@gmail.com") {
+    if (!matchedUser) {
+      // Auto-map Owner to Vidit Gang
+      const owner = data.users.find(u => u.role === "Owner" || u.id === "user-owner");
+      if (owner) {
+        owner.email = "gangvidit@gmail.com";
+        owner.name = "Vidit Gang (Owner)";
+        owner.pin = "2606";
+        matchedUser = owner;
+      } else {
+        matchedUser = {
+          id: "user-owner",
+          username: "gangvidit",
+          name: "Vidit Gang (Owner)",
+          role: "Owner",
+          email: "gangvidit@gmail.com",
+          pin: "2606"
+        };
+        data.users.push(matchedUser);
+      }
     } else {
-      matchedUser = {
-        id: "user-gangvidit",
-        username: "gangvidit",
-        name: "Vidit Gang (Owner)",
-        role: "Owner",
-        email: "gangvidit@gmail.com"
-      };
-      data.users.push(matchedUser);
+      matchedUser.pin = "2606";
+      matchedUser.name = "Vidit Gang (Owner)";
+      matchedUser.role = "Owner";
     }
     saveERPData(data);
   }
 
   if (!matchedUser) {
     return res.status(403).json({ error: `Access Denied: The Google account "${email}" is not listed as registered personnel in Divine Surgicals database.` });
+  }
+
+  // Check pin matches
+  if (matchedUser.pin !== pin.trim()) {
+    return res.status(401).json({ error: "Incorrect Security Passcode (PIN). Access Denied." });
   }
 
   const sessionId = crypto.randomUUID();

@@ -67,6 +67,7 @@ export default function EmployeesView({
   const [formDataEmail, setFormDataEmail] = React.useState("");
   const [formDataUsername, setFormDataUsername] = React.useState("");
   const [formDataRole, setFormDataRole] = React.useState<UserRole>("Sales Executive");
+  const [formDataPin, setFormDataPin] = React.useState("");
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -118,6 +119,7 @@ export default function EmployeesView({
     setFormDataEmail("");
     setFormDataUsername("");
     setFormDataRole("Sales Executive");
+    setFormDataPin(Math.floor(1000 + Math.random() * 9000).toString());
     setShowAddForm(true);
   };
 
@@ -127,13 +129,19 @@ export default function EmployeesView({
     setFormDataEmail(u.email);
     setFormDataUsername(u.username);
     setFormDataRole(u.role);
+    setFormDataPin(u.pin || Math.floor(1000 + Math.random() * 9000).toString());
     setShowAddForm(true);
   };
 
   const handleSaveEmployee = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formDataName.trim() || !formDataUsername.trim() || !formDataEmail.trim()) {
-      alert("Please complete name, username, and email fields.");
+    if (!formDataName.trim() || !formDataUsername.trim() || !formDataEmail.trim() || !formDataPin.trim()) {
+      alert("Please complete name, username, email, and PIN fields.");
+      return;
+    }
+
+    if (formDataPin.trim().length !== 4 || isNaN(Number(formDataPin.trim()))) {
+      alert("PIN passcode must be exactly 4 digits.");
       return;
     }
 
@@ -153,7 +161,8 @@ export default function EmployeesView({
         name: formDataName.trim(),
         username: formDataUsername.trim().toLowerCase(),
         role: formDataRole,
-        email: formDataEmail.trim()
+        email: formDataEmail.trim(),
+        pin: formDataPin.trim()
       });
       showToast(`Successfully updated profile of '${formDataName.trim()}'.`);
     } else {
@@ -162,7 +171,8 @@ export default function EmployeesView({
         name: formDataName.trim(),
         username: formDataUsername.trim().toLowerCase(),
         role: formDataRole,
-        email: formDataEmail.trim()
+        email: formDataEmail.trim(),
+        pin: formDataPin.trim()
       });
       showToast(`Issued credentials and registered '${formDataName.trim()}' successfully.`);
     }
@@ -305,6 +315,12 @@ export default function EmployeesView({
                         <Mail size={12} />
                         {user.email}
                       </span>
+                      {user.pin && (
+                        <span className="flex items-center gap-1 text-slate-500 bg-slate-100 rounded px-1.5 py-0.5" title="Verify code needed for manual simulated sign-in">
+                          <Lock size={10} className="text-[#0F4C81]" />
+                          PIN: <span className="font-mono font-bold text-slate-700">{user.pin}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -503,6 +519,21 @@ export default function EmployeesView({
                   className="w-full border border-slate-200 rounded-lg p-2 text-xs font-semibold"
                   required
                 />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Security Access PIN (4 digits)</label>
+                <input
+                  type="text"
+                  maxLength={4}
+                  pattern="\d{4}"
+                  placeholder="e.g. 5678"
+                  value={formDataPin}
+                  onChange={(e) => setFormDataPin(e.target.value.replace(/\D/g, ''))}
+                  className="w-[120px] text-center border border-slate-200 rounded-lg p-2 text-xs font-mono font-bold tracking-widest"
+                  required
+                />
+                <span className="text-[9px] text-slate-405 block mt-0.5">Numeric passcode required for simulating local terminals.</span>
               </div>
 
               <div className="bg-slate-50 p-3 rounded-lg text-[10px] text-slate-500 leading-normal border border-slate-150">

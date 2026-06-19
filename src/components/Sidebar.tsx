@@ -14,8 +14,13 @@ import {
   Bell,
   Stethoscope,
   ShieldCheck,
-  X
+  X,
+  Cloud,
+  LogOut,
+  RefreshCw,
+  CheckCircle2
 } from "lucide-react";
+import { User, SyncStatus } from "../types";
 
 interface SidebarProps {
   currentTab: string;
@@ -26,6 +31,12 @@ interface SidebarProps {
   onCloseMobileMenu?: () => void;
   appLogo?: string;
   appName?: string;
+  // Dynamic sync, identity & session controls
+  currentUser?: User;
+  onLogout?: () => void;
+  syncStatus?: SyncStatus;
+  triggerSync?: (source: 'OneDrive' | 'Google Sheets') => void;
+  isSyncing?: boolean;
 }
 
 export default function Sidebar({ 
@@ -36,7 +47,12 @@ export default function Sidebar({
   isOpenOnMobile = false,
   onCloseMobileMenu,
   appLogo,
-  appName = "Divine Surgicals"
+  appName = "Divine Surgicals",
+  currentUser,
+  onLogout,
+  syncStatus,
+  triggerSync,
+  isSyncing = false
 }: SidebarProps) {
   const navItems = [
     { id: "dashboard", label: "Executive Dashboard", icon: LayoutDashboard },
@@ -136,11 +152,71 @@ export default function Sidebar({
         })}
       </nav>
 
+      {/* Active Sync Status Control Panel */}
+      {syncStatus && triggerSync && (
+        <div className="p-3 mx-3 mb-2 bg-[#1E3A8A]/30 border border-white/10 rounded-xl space-y-2 text-[10px] text-slate-200">
+          <div className="flex items-center justify-between">
+            <span className="font-extrabold text-[8px] uppercase tracking-wider text-slate-400">Spreadsheet Sync</span>
+            <span className="flex items-center gap-1 font-bold text-[#DCEEFF] text-[10px]">
+              {syncStatus.source}
+              {syncStatus.status === 'synced' && <CheckCircle2 size={10} className="text-emerald-400 shrink-0" />}
+            </span>
+          </div>
+
+          <div className="flex gap-1.5 pt-0.5">
+            <button
+              onClick={() => triggerSync('OneDrive')}
+              disabled={isSyncing}
+              className="flex-1 py-1 bg-white/10 hover:bg-white/15 active:bg-white/5 rounded border border-white/15 text-[9px] font-bold transition cursor-pointer text-white disabled:opacity-50"
+              title="Sync Microsoft OneDrive Excel file"
+            >
+              {isSyncing ? "Syncing..." : "OneDrive"}
+            </button>
+            <button
+              onClick={() => triggerSync('Google Sheets')}
+              disabled={isSyncing}
+              className="flex-1 py-1 bg-[#4A90E2]/20 hover:bg-[#4A90E2]/35 active:bg-[#4A90E2]/10 rounded border border-blue-400/25 text-[9px] font-bold transition cursor-pointer text-[#DCEEFF] disabled:opacity-50"
+              title="Sync Google Sheets"
+            >
+              Sheets
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Operator Session Node */}
+      {currentUser && (
+        <div className="p-3 border-t border-white/10 bg-black/10 flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="w-7 h-7 rounded-full bg-[#4A90E2] text-white text-[10px] uppercase font-extrabold flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
+              {currentUser.name.charAt(0)}
+            </div>
+            <div className="flex flex-col text-left min-w-0">
+              <span className="font-bold text-[11px] text-white truncate leading-tight select-all">
+                {currentUser.name.split(' ')[0]}
+              </span>
+              <span className="text-[8px] text-slate-350 font-bold uppercase tracking-wider leading-none mt-0.5">
+                {currentUser.role}
+              </span>
+            </div>
+          </div>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="p-1.5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition cursor-pointer border border-transparent hover:border-white/10 animate-fade-in"
+              title="Disconnect secure terminal session"
+            >
+              <LogOut size={13} />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Footer / Location indicator */}
-      <div className="p-4 border-t border-white/10 bg-blue-950/30 text-[10px] text-slate-300 text-center space-y-0.5">
-        <p className="font-bold text-[#DCEEFF] leading-tight truncate">{appName}</p>
-        <p className="opacity-70 leading-none">N.H. Way, Silchar, Assam</p>
-        <p className="opacity-40 text-[8px] font-mono leading-none pt-0.5">GSTIN: 18AABCS9912D1ZS</p>
+      <div className="p-3 bg-blue-950/40 text-[9px] text-slate-400 text-center space-y-0.5 border-t border-white/5 shrink-0">
+        <p className="font-semibold text-slate-300 leading-none">Silchar Distribution Center</p>
+        <p className="opacity-50 tracking-wide">SMCH Road • Assam, India</p>
       </div>
 
     </div>

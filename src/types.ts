@@ -10,6 +10,7 @@ export interface User {
   name: string;
   role: UserRole;
   email: string;
+  pin?: string; // Secure 4-digit Passcode for simulation auth checking
 }
 
 export interface Product {
