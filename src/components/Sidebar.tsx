@@ -37,6 +37,8 @@ interface SidebarProps {
   syncStatus?: SyncStatus;
   triggerSync?: (source: 'OneDrive' | 'Google Sheets') => void;
   isSyncing?: boolean;
+  sheetsUrl?: string;
+  oneDriveUrl?: string;
 }
 
 export default function Sidebar({ 
@@ -52,7 +54,9 @@ export default function Sidebar({
   onLogout,
   syncStatus,
   triggerSync,
-  isSyncing = false
+  isSyncing = false,
+  sheetsUrl,
+  oneDriveUrl
 }: SidebarProps) {
   const navItems = [
     { id: "dashboard", label: "Executive Dashboard", icon: LayoutDashboard },
@@ -164,22 +168,48 @@ export default function Sidebar({
           </div>
 
           <div className="flex gap-1.5 pt-0.5">
-            <button
-              onClick={() => triggerSync('OneDrive')}
-              disabled={isSyncing}
-              className="flex-1 py-1 bg-white/10 hover:bg-white/15 active:bg-white/5 rounded border border-white/15 text-[9px] font-bold transition cursor-pointer text-white disabled:opacity-50"
-              title="Sync Microsoft OneDrive Excel file"
-            >
-              {isSyncing ? "Syncing..." : "OneDrive"}
-            </button>
-            <button
-              onClick={() => triggerSync('Google Sheets')}
-              disabled={isSyncing}
-              className="flex-1 py-1 bg-[#4A90E2]/20 hover:bg-[#4A90E2]/35 active:bg-[#4A90E2]/10 rounded border border-blue-400/25 text-[9px] font-bold transition cursor-pointer text-[#DCEEFF] disabled:opacity-50"
-              title="Sync Google Sheets"
-            >
-              Sheets
-            </button>
+            <div className="flex-1 flex flex-col gap-1">
+              <button
+                onClick={() => triggerSync('OneDrive')}
+                disabled={isSyncing}
+                className="w-full py-1 bg-white/10 hover:bg-white/15 active:bg-white/5 rounded border border-white/15 text-[9px] font-bold transition cursor-pointer text-white disabled:opacity-50"
+                title="Sync Microsoft OneDrive Excel file"
+              >
+                {isSyncing ? "Syncing..." : "OneDrive"}
+              </button>
+              {oneDriveUrl && (
+                <a
+                  href={oneDriveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-center text-[8px] text-[#A5C9FF] hover:text-white underline font-bold transition pt-0.5"
+                  title="Open active Microsoft OneDrive Spreadsheet"
+                >
+                  Open Excel ↗
+                </a>
+              )}
+            </div>
+            <div className="flex-1 flex flex-col gap-1">
+              <button
+                onClick={() => triggerSync('Google Sheets')}
+                disabled={isSyncing}
+                className="w-full py-1 bg-[#4A90E2]/20 hover:bg-[#4A90E2]/35 active:bg-[#4A90E2]/10 rounded border border-blue-400/25 text-[9px] font-bold transition cursor-pointer text-[#DCEEFF] disabled:opacity-50"
+                title="Sync Google Sheets"
+              >
+                {isSyncing ? "Syncing..." : "Sheets"}
+              </button>
+              {sheetsUrl && (
+                <a
+                  href={sheetsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-center text-[8px] text-[#A3E635] hover:text-white underline font-bold transition pt-0.5"
+                  title="Open connected Google Sheets Spreadsheet"
+                >
+                  Open Sheets ↗
+                </a>
+              )}
+            </div>
           </div>
         </div>
       )}

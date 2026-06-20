@@ -386,6 +386,7 @@ const generateDefaultData = (): ERPData => {
       customerName: "Silchar Medical College & Hospital (SMCH)",
       customerMobile: "9435061234",
       customerGst: "18AAAGS8801H1Z2",
+      customerState: "Assam",
       items: [
         {
           productId: "prod-3",
@@ -395,6 +396,9 @@ const generateDefaultData = (): ERPData => {
           unitPrice: 4200.00,
           gstRate: 18,
           gstAmount: 7560.00,
+          cgstAmount: 3780.00,
+          sgstAmount: 3780.00,
+          igstAmount: 0,
           totalAmount: 49560.00
         },
         {
@@ -405,11 +409,17 @@ const generateDefaultData = (): ERPData => {
           unitPrice: 2450.00,
           gstRate: 18,
           gstAmount: 8820.00,
+          cgstAmount: 4410.00,
+          sgstAmount: 4410.00,
+          igstAmount: 0,
           totalAmount: 57820.00
         }
       ],
       subtotal: 91000.00,
       totalGst: 16380.00,
+      totalCgst: 8190.00,
+      totalSgst: 8190.00,
+      totalIgst: 0,
       grandTotal: 107380.00,
       discount: 0,
       date: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
@@ -424,6 +434,7 @@ const generateDefaultData = (): ERPData => {
       customerName: "Valley Hospital & Research Centre Silchar",
       customerMobile: "03842240101",
       customerGst: "18AABCV4921J1ZN",
+      customerState: "Assam",
       items: [
         {
           productId: "prod-1",
@@ -433,6 +444,9 @@ const generateDefaultData = (): ERPData => {
           unitPrice: 12.00,
           gstRate: 12,
           gstAmount: 1440.00,
+          cgstAmount: 720.00,
+          sgstAmount: 720.00,
+          igstAmount: 0,
           totalAmount: 13440.00
         },
         {
@@ -443,11 +457,17 @@ const generateDefaultData = (): ERPData => {
           unitPrice: 58000.00,
           gstRate: 12,
           gstAmount: 13920.00,
+          cgstAmount: 6960.00,
+          sgstAmount: 6960.00,
+          igstAmount: 0,
           totalAmount: 129920.00
         }
       ],
       subtotal: 128000.00,
       totalGst: 15360.00,
+      totalCgst: 7680.00,
+      totalSgst: 7680.00,
+      totalIgst: 0,
       grandTotal: 143360.00,
       discount: 1500.00, // Direct discount
       date: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(),
@@ -603,6 +623,52 @@ const loadERPData = (): ERPData => {
           "Accountant": ["dashboard", "purchases", "sales", "suppliers", "customers", "finance", "reports", "ai-assistant"],
           "Sales Executive": ["dashboard", "inventory", "sales", "customers", "ai-assistant"]
         };
+        updated = true;
+      }
+      if (!parsed.gstNotes) {
+        parsed.gstNotes = [];
+        updated = true;
+      }
+      if (!parsed.salesOrders) {
+        parsed.salesOrders = [];
+        updated = true;
+      }
+      if (!parsed.deliveryChallans) {
+        parsed.deliveryChallans = [];
+        updated = true;
+      }
+      if (!parsed.billingSchemes) {
+        parsed.billingSchemes = [
+          { id: "scheme-1", name: "Buy 10 Get 1 Free on DispoVan Syringes", type: "BuyXGetY", productIdX: "prod-1", quantityX: 10, productIdY: "prod-1", quantityY: 1, active: true },
+          { id: "scheme-2", name: "Flat 10% on Omron Monitors", type: "FlatDiscount", brandTarget: "Omron", discountPercentage: 10, active: true },
+          { id: "scheme-3", name: "Romsons Campaign (Mfr-Funded 5%)", type: "ManufacturerFunded", brandTarget: "Romsons", discountPercentage: 5, manufacturerCode: "ROM-MF-05", active: true }
+        ];
+        updated = true;
+      }
+      if (!parsed.products.some(p => p.batches && p.batches.length > 0)) {
+        parsed.products.forEach(p => {
+          if (!p.batches) {
+            p.batches = [
+              {
+                id: `batch-${p.id}-1`,
+                batchNumber: p.batchNumber,
+                expiryDate: p.expiryDate,
+                currentStock: p.currentStock,
+                purchasePrice: p.purchasePrice,
+                unitPrice: p.unitPrice
+              },
+              {
+                id: `batch-${p.id}-2`,
+                batchNumber: p.batchNumber.slice(0, -2) + "99",
+                // Set expiry date slightly earlier or soon for testing FEFO
+                expiryDate: new Date(new Date().getTime() + 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], 
+                currentStock: Math.floor(p.currentStock * 0.4) + 10,
+                purchasePrice: p.purchasePrice,
+                unitPrice: p.unitPrice
+              }
+            ];
+          }
+        });
         updated = true;
       }
       if (updated) {

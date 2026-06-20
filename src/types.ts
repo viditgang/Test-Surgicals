@@ -13,6 +13,15 @@ export interface User {
   pin?: string; // Secure 4-digit Passcode for simulation auth checking
 }
 
+export interface ProductBatch {
+  id: string;
+  batchNumber: string;
+  expiryDate: string;    // YYYY-MM-DD
+  currentStock: number;
+  purchasePrice: number;
+  unitPrice: number;     // Selling price
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -29,6 +38,7 @@ export interface Product {
   batchNumber: string;
   expiryDate: string;    // YYYY-MM-DD
   qrCodeValue?: string;
+  batches?: ProductBatch[]; // Advanced Multi-batch tracking
 }
 
 export type InventoryActionType = 
@@ -118,6 +128,16 @@ export interface Customer {
   outstandingPayments: number;
   creditLimit: number;
   lifetimeValue: number;
+  state?: string; // State of Supply (e.g. Maharashtra, Karnataka, Out of State)
+}
+
+export interface PaymentReceipt {
+  id: string;
+  amount: number;
+  date: string;
+  paymentMethod: 'Cash' | 'Card' | 'UPI' | 'Bank Transfer';
+  transactionRef?: string;
+  notes?: string;
 }
 
 export interface InvoiceItem {
@@ -128,7 +148,11 @@ export interface InvoiceItem {
   unitPrice: number;
   gstRate: number;
   gstAmount: number;
+  cgstAmount: number;   // CGST split
+  sgstAmount: number;   // SGST split
+  igstAmount: number;   // IGST split
   totalAmount: number;
+  batchNumber?: string; // Stock Batch billed
 }
 
 export interface SalesInvoice {
@@ -138,16 +162,118 @@ export interface SalesInvoice {
   customerName: string;
   customerMobile: string;
   customerGst: string;
+  customerState?: string; // For GST rule splitting (intra vs. inter-state)
   items: InvoiceItem[];
   subtotal: number;
   totalGst: number;
+  totalCgst: number;
+  totalSgst: number;
+  totalIgst: number;
   grandTotal: number;
   discount: number;
   date: string;          // ISO Date or Date String
   paymentMethod: 'Cash' | 'Card' | 'UPI' | 'Bank Transfer';
-  status: 'Paid' | 'Unpaid' | 'Overdue';
+  status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   qrCodeUrl?: string;
   createdBy: string;
+  paymentsList?: PaymentReceipt[]; // Multiple payments logged per invoice
+  amountPaid?: number;
+  deliveryChallanId?: string;
+  salesOrderId?: string;
+}
+
+// ADVANCED ERP SUB-ENTITIES
+
+export interface GstNote {
+  id: string;
+  noteNumber: string; // e.g. CN-001 or DN-001
+  type: 'Credit' | 'Debit';
+  invoiceId: string;
+  invoiceNumber: string;
+  customerId: string;
+  customerName: string;
+  date: string;
+  items: Array<{
+    productId: string;
+    name: string;
+    quantity: number;
+    unitPrice: number;
+    gstRate: number;
+    gstAmount: number;
+    totalAmount: number;
+  }>;
+  subtotal: number;
+  totalGst: number;
+  grandTotal: number;
+  cgstAmount: number;
+  sgstAmount: number;
+  igstAmount: number;
+  reason: string; // e.g. "Goods Returned", "Over-billing Correction", "Discount Post-Invoice"
+  gstReversed: boolean;
+  createdBy: string;
+}
+
+export interface SalesOrder {
+  id: string;
+  orderNumber: string; // e.g. SO-001
+  customerId: string;
+  customerName: string;
+  customerMobile: string;
+  customerGst: string;
+  hospitalPoNumber?: string; // Hospital's Purchase Order number
+  date: string;
+  items: Array<{
+    productId: string;
+    name: string;
+    sku: string;
+    quantity: number;
+    unitPrice: number;
+    gstRate: number;
+    totalAmount: number;
+  }>;
+  totalAmount: number;
+  status: 'Draft' | 'Confirmed' | 'Invoiced' | 'Cancelled';
+  notes?: string;
+  createdBy: string;
+}
+
+export interface DeliveryChallan {
+  id: string;
+  challanNumber: string; // e.g. DC-001
+  customerId: string;
+  customerName: string;
+  customerMobile: string;
+  customerGst: string;
+  date: string;
+  items: Array<{
+    productId: string;
+    name: string;
+    sku: string;
+    quantity: number;
+    unitPrice: number;
+    gstRate: number;
+    totalAmount: number;
+  }>;
+  totalAmount: number;
+  status: 'Draft' | 'Dispatched' | 'Invoiced';
+  salesOrderId?: string;
+  deliveryTerms?: string;
+  vehicleNumber?: string;
+  createdBy: string;
+}
+
+export interface BillingScheme {
+  id: string;
+  name: string;
+  type: 'BuyXGetY' | 'FlatDiscount' | 'ManufacturerFunded';
+  productIdX?: string; // buy product
+  quantityX?: number;  // buy qty
+  productIdY?: string; // get free product
+  quantityY?: number;  // get free qty
+  discountPercentage?: number; // for FlatDiscount
+  manufacturerCode?: string; // for funding trace
+  brandTarget?: string; // brand the flat % discount applies to
+  active: boolean;
 }
 
 export type FinancialTransactionType = 'Income' | 'Expense';
@@ -202,4 +328,10 @@ export interface ERPData {
   rolePermissions?: Record<string, string[]>;
   appLogo?: string;
   appName?: string;
+  sheetsUrl?: string;
+  oneDriveUrl?: string;
+  gstNotes?: GstNote[]; // Credit & Debit Notes
+  salesOrders?: SalesOrder[]; // Hospital POS Orders
+  deliveryChallans?: DeliveryChallan[]; // DC Dispatch tracking before invoicing
+  billingSchemes?: BillingScheme[]; // Promo campaigns, brand flat offer adjustments
 }

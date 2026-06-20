@@ -723,12 +723,14 @@ export default function App() {
     await saveStateToServer(updatedData);
   };
 
-  const handleSaveBranding = async (logoUrl: string, brandName: string) => {
+  const handleSaveBranding = async (logoUrl: string, brandName: string, sheetsUrl?: string, oneDriveUrl?: string) => {
     if (!erpData || !currentUser) return;
     const updatedData: ERPData = {
       ...erpData,
       appLogo: logoUrl,
       appName: brandName,
+      sheetsUrl,
+      oneDriveUrl,
       activityLogs: [
         {
           id: `act-${Date.now()}`,
@@ -737,7 +739,7 @@ export default function App() {
           userName: currentUser.name,
           userRole: currentUser.role,
           module: "Branding",
-          action: `Updated corporate branding. Set Workstation title to "${brandName}"`
+          action: `Updated corporate branding & cloud sync nodes. Active spreadsheet link updated.`
         },
         ...erpData.activityLogs
       ]
@@ -922,6 +924,9 @@ export default function App() {
             unitPrice: uPrice,
             gstRate,
             gstAmount: gst,
+            cgstAmount: gst / 2,
+            sgstAmount: gst / 2,
+            igstAmount: 0,
             totalAmount: total
           };
         });
@@ -938,6 +943,9 @@ export default function App() {
           items: parsedItems,
           subtotal,
           totalGst,
+          totalCgst: totalGst / 2,
+          totalSgst: totalGst / 2,
+          totalIgst: 0,
           grandTotal,
           discount: 0,
           date: first.date || new Date().toISOString().split('T')[0],
@@ -1168,6 +1176,8 @@ export default function App() {
           syncStatus={erpData.syncStatus}
           triggerSync={handleTriggerSync}
           isSyncing={isSyncing}
+          sheetsUrl={erpData.sheetsUrl}
+          oneDriveUrl={erpData.oneDriveUrl}
         />
 
         {/* Content canvas container */}
@@ -1239,6 +1249,7 @@ export default function App() {
                   onCreateInvoice={handleCreateInvoice}
                   onAddCustomer={handleAddCustomer}
                   onBulkImport={(items) => handleBulkImport('sales', items)}
+                  onUpdateERPData={saveStateToServer}
                 />
               )}
 

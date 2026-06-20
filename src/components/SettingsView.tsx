@@ -22,12 +22,14 @@ interface SettingsViewProps {
   currentUser: User;
   onTriggerSync: (source: 'OneDrive' | 'Google Sheets') => void;
   isSyncing: boolean;
-  onSaveLogoAndBranding: (logoUrl: string, brandName: string) => void;
+  onSaveLogoAndBranding: (logoUrl: string, brandName: string, sheetsUrl?: string, oneDriveUrl?: string) => void;
 }
 
 export default function SettingsView({ data, currentUser, onTriggerSync, isSyncing, onSaveLogoAndBranding }: SettingsViewProps) {
   const [logoInput, setLogoInput] = React.useState(data.appLogo || "");
   const [appNameInput, setAppNameInput] = React.useState(data.appName || "Divine Surgicals");
+  const [sheetsUrlInput, setSheetsUrlInput] = React.useState(data.sheetsUrl || "https://docs.google.com/spreadsheets/d/1v280T2x_Vea96C4_sCMeG_fEALXWffg90vY7E1zAnXw/edit?usp=sharing");
+  const [oneDriveUrlInput, setOneDriveUrlInput] = React.useState(data.oneDriveUrl || "https://onedrive.live.com/edit.aspx?resid=92D1ZSDivineSurgicalsERP");
   const [saveSuccess, setSaveSuccess] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -35,7 +37,9 @@ export default function SettingsView({ data, currentUser, onTriggerSync, isSynci
   React.useEffect(() => {
     if (data.appLogo !== undefined) setLogoInput(data.appLogo);
     if (data.appName !== undefined) setAppNameInput(data.appName);
-  }, [data.appLogo, data.appName]);
+    if (data.sheetsUrl !== undefined) setSheetsUrlInput(data.sheetsUrl);
+    if (data.oneDriveUrl !== undefined) setOneDriveUrlInput(data.oneDriveUrl);
+  }, [data.appLogo, data.appName, data.sheetsUrl, data.oneDriveUrl]);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -55,7 +59,7 @@ export default function SettingsView({ data, currentUser, onTriggerSync, isSynci
   };
 
   const handleSaveBranding = () => {
-    onSaveLogoAndBranding(logoInput, appNameInput);
+    onSaveLogoAndBranding(logoInput, appNameInput, sheetsUrlInput, oneDriveUrlInput);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
@@ -192,13 +196,34 @@ export default function SettingsView({ data, currentUser, onTriggerSync, isSynci
               </div>
               <p className="text-[10px] text-slate-500">Connected target: <strong>DivineSurgicals_ERP.xlsx</strong></p>
               
-              <button
-                onClick={() => onTriggerSync('OneDrive')}
-                disabled={isSyncing}
-                className="w-full py-1.5 bg-[#0F4C81] hover:bg-opacity-95 text-white text-[10px] font-bold rounded-lg transition disabled:bg-slate-200 cursor-pointer text-center"
-              >
-                {isSyncing ? "Triggering Live API node..." : "Force Sync OneDrive Now"}
-              </button>
+              <div className="space-y-1">
+                <label className="text-[9px] text-slate-400 font-bold block">OneDrive Excel File Link</label>
+                <input
+                  type="text"
+                  value={oneDriveUrlInput}
+                  onChange={(e) => setOneDriveUrlInput(e.target.value)}
+                  placeholder="Paste OneDrive direct URL"
+                  className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-700 outline-hidden focus:border-[#0F4C81]"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <a
+                  href={oneDriveUrlInput}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-[#0F4C81] text-[10px] font-bold rounded-lg text-center transition block cursor-pointer"
+                >
+                  Open Excel ↗
+                </a>
+                <button
+                  onClick={() => onTriggerSync('OneDrive')}
+                  disabled={isSyncing}
+                  className="flex-1 py-1.5 bg-[#0F4C81] hover:bg-opacity-95 text-white text-[10px] font-bold rounded-lg transition disabled:bg-slate-200 cursor-pointer text-center"
+                >
+                  {isSyncing ? "Syncing..." : "Sync Now"}
+                </button>
+              </div>
             </div>
 
             {/* Google Sheets Box */}
@@ -212,13 +237,34 @@ export default function SettingsView({ data, currentUser, onTriggerSync, isSynci
               </div>
               <p className="text-[10px] text-slate-500">Connected sheet: <strong>DivineSurgicals_ERP_Sheet</strong></p>
               
-              <button
-                onClick={() => onTriggerSync('Google Sheets')}
-                disabled={isSyncing}
-                className="w-full py-1.5 bg-[#4A90E2] hover:bg-opacity-95 text-white text-[10px] font-bold rounded-lg transition disabled:bg-slate-200 cursor-pointer text-center"
-              >
-                {isSyncing ? "Syncing standard Sheets node..." : "Trigger Google Sheets Import"}
-              </button>
+              <div className="space-y-1">
+                <label className="text-[9px] text-slate-400 font-bold block">Google Sheet URL</label>
+                <input
+                  type="text"
+                  value={sheetsUrlInput}
+                  onChange={(e) => setSheetsUrlInput(e.target.value)}
+                  placeholder="Paste Google Sheets URL"
+                  className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-[10px] text-slate-700 outline-hidden focus:border-[#4A90E2]"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <a
+                  href={sheetsUrlInput}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-[#4A90E2] text-[10px] font-bold rounded-lg text-center transition block cursor-pointer"
+                >
+                  Open Sheet ↗
+                </a>
+                <button
+                  onClick={() => onTriggerSync('Google Sheets')}
+                  disabled={isSyncing}
+                  className="flex-1 py-1.5 bg-[#4A90E2] hover:bg-opacity-95 text-white text-[10px] font-bold rounded-lg transition disabled:bg-slate-200 cursor-pointer text-center"
+                >
+                  {isSyncing ? "Syncing..." : "Sync Now"}
+                </button>
+              </div>
             </div>
 
           </div>
